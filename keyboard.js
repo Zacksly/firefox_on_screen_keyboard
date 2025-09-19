@@ -439,17 +439,51 @@ var fxKeyboard = {
             fxKeyboard.hierarchy.slavedIFrame.contentWindow.postMessage(JSON.stringify({"directive": "slave", "command": "sendKey", "key": character}), "*");
         } else {
             switch (character) {
-                case "Delete":
+                case "Backspace":
                     fxKeyboard.focusElement.value = fxKeyboard.focusElement.value.slice(0, -1);
                     break;
-                case "Enter":
-                    fxKeyboard.focusElement.dispatchEvent(new KeyboardEvent("beforeinput", {"key": character, "shiftKey": false, "keyCode": (JSON.parse(FxKeyMap))[character]}));
-                    fxKeyboard.focusElement.dispatchEvent(new KeyboardEvent("keydown", {"key": character, "shiftKey": false, "code": character, "keyCode": (JSON.parse(FxKeyMap))[character]}));
-                    fxKeyboard.focusElement.dispatchEvent(new KeyboardEvent("keyup", {"key": character, "shiftKey": false, "code": character, "keyCode": (JSON.parse(FxKeyMap))[character]}));
-                    if (fxKeyboard.focusElement.parentNode.nodeName === 'FORM') {
-                        fxKeyboard.focusElement.parentNode.submit();
+               case "Enter": {
+                    const el = fxKeyboard.focusElement;
+                    if (!el) break;
+
+                    // 1) Textareas/contenteditable: insert newline instead of submitting
+                    const isTextarea = el.tagName === "TEXTAREA";
+                    const isCE = el.isContentEditable || el.getAttribute("contenteditable") === "true";
+                    if (isTextarea || isCE) {
+                        // selection-aware newline insert
+                        if (typeof el.selectionStart === "number" && typeof el.selectionEnd === "number") {
+                        const start = el.selectionStart, end = el.selectionEnd;
+                        el.value = el.value.slice(0, start) + "\n" + el.value.slice(end);
+                        el.setSelectionRange(start + 1, start + 1);
+                        el.dispatchEvent(new Event("input", { bubbles: true, cancelable: true }));
+                        } else {
+                        el.value += "\n";
+                        el.dispatchEvent(new Event("input", { bubbles: true, cancelable: true }));
+                        }
+                        break;
+                    }
+
+                    // 2) Inputs etc.: submit enclosing form like a real Enter would
+                    const form = el.form || el.closest && el.closest("form");
+                    if (form) {
+                        // Prefer requestSubmit: fires validation + submit event and clicks the default submitter
+                        if (typeof form.requestSubmit === "function") {
+                        form.requestSubmit();
+                        } else {
+                        // Fallbacks for older browsers
+                        const submitter =
+                            form.querySelector('button[type="submit"]:not([disabled]), input[type="submit"]:not([disabled])');
+                        if (submitter) {
+                            submitter.click();
+                        } else {
+                            // NOTE: form.submit() bypasses submit listeners & constraint validation
+                            form.submit();
+                        }
+                        }
                     }
                     break;
+                    }
+
                 default:
                     fxKeyboard.focusElement.value = fxKeyboard.focusElement.value === null ? "" + character : fxKeyboard.focusElement.value + character;
 
