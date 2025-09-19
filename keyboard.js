@@ -1,8 +1,8 @@
 /*
- FxKeyboard
+ FxKeyboard Plus
  Version: 1.10.1
- Author:  Travis Fitzgerald
- Date:    23 March 2021
+ Author:  Travis Fitzgerald / Zacksly
+ Date:    23 March 2021 / September 18th, 2025
  Purpose: A virtual keyboard for Firefox
  */
 

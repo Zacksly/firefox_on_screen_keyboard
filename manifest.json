@@ -1,8 +1,8 @@
 {
     "manifest_version": 2,
-    "name": "FX OSK",
+    "name": "Firefox On-Screen Keyboard",
     "version": "1.11.0",
-    "description": "On-Screen Keyboard for FireFox",
+    "description": "The Zacksly On-Screen Keyboard for FireFox",
     "icons": {
         "48": "icon.svg",
         "96": "icon.svg"
